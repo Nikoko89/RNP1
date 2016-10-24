@@ -73,31 +73,70 @@ public class Server {
                 System.err.println("Could not set to keep the socket alive");
             }
 
-            //BufferedReader serverInput = null;
             try {
                 //Nachricht vom Client an den Server
-                //serverInput = new BufferedReader(new InputStreamReader(socketForClient.getInputStream()));
-                DataInputStream dos = null;
-                dos = new DataInputStream(socketForClient.getInputStream());
+                DataInputStream clientInput = null;
+                clientInput = new DataInputStream(socketForClient.getInputStream());
                 // Nachricht vom Server an den Client
                 DataOutputStream clientOutput = new DataOutputStream(socketForClient.getOutputStream());
                 String inputLine;
                 System.out.println("Client connected to Server");
                 while (alive) {
-                    //inputLine = serverInput.readLine();
                     try {
-                        inputLine = dos.readUTF();
-                        System.out.println(inputLine + inputLine.length());
-                        byte[] bytes = "Côte d'Ivoire".getBytes("UTF-8");
-                        if (inputLine.equals("bye" + '\n')) {
-                            System.out.println("bye OK");
-                            socketForClient.setKeepAlive(false);
-                            alive = false;
-                            remove();
-                            clientOutput.close();
-                            dos.close();
-                            socketForClient.close();
-                            break;
+                        inputLine = clientInput.readUTF();
+                        String[] inputArray = inputLine.split(" ");
+                        if (inputArray.length == 1) {
+                            inputArray[0] = inputArray[0].replaceAll("\\n", "");
+                        }
+
+                        switch (inputArray[0]) {
+                            case "LOWERCASE":
+                                if (inputLine.length() > 256) {
+                                    System.out.println("ERROR LOWERCASE commmand detected, but the given String is too long");
+                                } else if (inputArray.length == 1) {
+                                    System.out.println("ERROR LOWERCASE command detected, but there is a Missing Parameter");
+                                } else {
+                                    String parameter = inputLine.replaceAll("LOWERCASE ", "");
+                                    System.out.println("OK " + parameter.replaceAll("\\n", "").toLowerCase());
+                                }
+                                break;
+                            case "UPPERCASE":
+                                if (inputLine.length() > 256) {
+                                    System.out.println("ERROR UPPERCASE command detected, but the given String is too long");
+                                } else if (inputArray.length == 1) {
+                                    System.out.println("ERROR UPPERCASE command detected, but there is a Missing Parameter");
+                                } else {
+                                    String parameter = inputLine.replaceAll("UPPERCASE ", "");
+                                    System.out.println("OK " + parameter.replaceAll("\\n", "").toUpperCase());
+                                }
+                                break;
+                            case "REVERSE":
+                                if (inputLine.length() > 256) {
+                                    System.out.println("ERROR REVERSE command detected, but the given String is too long");
+                                } else if (inputArray.length == 1) {
+                                    System.out.println("ERROR REVERSE command detected, but there is a Missing Parameter");
+                                } else {
+                                    String parameter = inputLine.replaceAll("\\n", "").replaceAll("REVERSE ", "");
+                                    String reverse = new StringBuffer(parameter).reverse().toString();
+                                    System.out.println("OK " + reverse);
+                                }
+                                break;
+                            case "BYE":
+                                if (inputLine.length() > 256) {
+                                    System.out.println("ERROR BYE command detected, but the given String is too long");
+                                } else if (inputArray.length > 1) {
+                                    System.out.println("ERROR BYE command detected, but there is a Parameter, which is not necessary for this command");
+                                } else {
+                                    System.out.println("OK BYE");
+                                    socketForClient.setKeepAlive(false);
+                                    alive = false;
+                                    remove();
+                                    clientOutput.close();
+                                    clientInput.close();
+                                    socketForClient.close();
+                                }
+                                break;
+                            default:
                         }
                     } catch (EOFException e) {
                         System.err.println("Client disconnected itself");
@@ -105,7 +144,7 @@ public class Server {
                         alive = false;
                         remove();
                         clientOutput.close();
-                        dos.close();
+                        clientInput.close();
                         socketForClient.close();
                         break;
                     }

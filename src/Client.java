@@ -29,7 +29,7 @@ public class Client {
 
                 clientOutput.writeUTF(eingabe);
                 //clientOutput.writeBytes(eingabe);
-                if (eingabe.equals("bye")) {
+                if (eingabe.equals("bye" + '\n')) {
 
                     living = false;
                     serverInput.close();
