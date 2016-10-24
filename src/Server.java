@@ -97,7 +97,7 @@ public class Server {
                         switch (inputArray[0]) {
                             case "LOWERCASE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <LOWERCASE commmand detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <LOWERCASE commmand detected, but the given String is too long>");
                                 } else if (inputArray.length == 1) {
                                     serverOutput.writeUTF("ERROR SYNTAX ERROR <LOWERCASE command detected, but there is a Missing Parameter>");
                                 } else {
@@ -107,7 +107,7 @@ public class Server {
                                 break;
                             case "UPPERCASE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <UPPERCASE command detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <UPPERCASE command detected, but the given String is too long>");
                                 } else if (inputArray.length == 1) {
                                     serverOutput.writeUTF("ERROR SYNTAX ERROR <UPPERCASE command detected, but there is a Missing Parameter>");
                                 } else {
@@ -117,7 +117,7 @@ public class Server {
                                 break;
                             case "REVERSE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <REVERSE command detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <REVERSE command detected, but the given String is too long>");
                                 } else if (inputArray.length == 1) {
                                     serverOutput.writeUTF("ERROR SYNTAX ERROR <REVERSE command detected, but there is a Missing Parameter>");
                                 } else {
@@ -128,7 +128,7 @@ public class Server {
                                 break;
                             case "BYE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <BYE command detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <BYE command detected, but the given String is too long>");
                                 } else if (inputArray.length > 1) {
                                     serverOutput.writeUTF("ERROR SYNTAX ERROR <BYE command detected, but there is a Parameter, which is not necessary for this command>");
                                 } else {
@@ -142,6 +142,7 @@ public class Server {
                                 }
                                 break;
                             default:
+                                serverOutput.writeUTF("ERROR UNKNOWN COMMAND");
                         }
                     } catch (EOFException e) {
                         System.err.println("Client disconnected itself");

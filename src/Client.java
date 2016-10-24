@@ -22,7 +22,7 @@ public class Client {
             DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
 
             while (living) {
-                System.out.println("Bitte Eingabe tätigen: ");
+                System.out.println("Please type in a command: ");
                 String eingabe = userInput.readLine() + '\n';
                 clientOutput.writeUTF(eingabe);
 
