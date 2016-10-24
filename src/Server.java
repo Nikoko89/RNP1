@@ -97,9 +97,9 @@ public class Server {
                         switch (inputArray[0]) {
                             case "LOWERCASE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR LOWERCASE commmand detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <LOWERCASE commmand detected, but the given String is too long>");
                                 } else if (inputArray.length == 1) {
-                                    serverOutput.writeUTF("ERROR LOWERCASE command detected, but there is a Missing Parameter");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <LOWERCASE command detected, but there is a Missing Parameter>");
                                 } else {
                                     String parameter = inputLine.replaceAll("LOWERCASE ", "");
                                     serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toLowerCase());
@@ -107,9 +107,9 @@ public class Server {
                                 break;
                             case "UPPERCASE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR UPPERCASE command detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <UPPERCASE command detected, but the given String is too long>");
                                 } else if (inputArray.length == 1) {
-                                    serverOutput.writeUTF("ERROR UPPERCASE command detected, but there is a Missing Parameter");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <UPPERCASE command detected, but there is a Missing Parameter>");
                                 } else {
                                     String parameter = inputLine.replaceAll("UPPERCASE ", "");
                                     serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toUpperCase());
@@ -117,9 +117,9 @@ public class Server {
                                 break;
                             case "REVERSE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR REVERSE command detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <REVERSE command detected, but the given String is too long>");
                                 } else if (inputArray.length == 1) {
-                                    serverOutput.writeUTF("ERROR REVERSE command detected, but there is a Missing Parameter");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <REVERSE command detected, but there is a Missing Parameter>");
                                 } else {
                                     String parameter = inputLine.replaceAll("\\n", "").replaceAll("REVERSE ", "");
                                     String reverse = new StringBuffer(parameter).reverse().toString();
@@ -128,9 +128,9 @@ public class Server {
                                 break;
                             case "BYE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR BYE command detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <BYE command detected, but the given String is too long>");
                                 } else if (inputArray.length > 1) {
-                                    serverOutput.writeUTF("ERROR BYE command detected, but there is a Parameter, which is not necessary for this command");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <BYE command detected, but there is a Parameter, which is not necessary for this command>");
                                 } else {
                                     serverOutput.writeUTF("OK BYE");
                                     socketForClient.setKeepAlive(false);
