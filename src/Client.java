@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.Charset;
 
@@ -14,23 +11,25 @@ public class Client {
             Socket clientSocket = new Socket("127.0.0.1", 6432);
             clientSocket.setKeepAlive(true);
             boolean living = true;
+            // Nachricht vom Benutzer an den Client
+            BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
+
+            // Nachricht vom Server an den Client
+            DataInputStream serverInput = new DataInputStream(clientSocket.getInputStream());
+
+
+            // Nachricht vom Client an den Server
+            DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
+
             while (living) {
-                // Nachricht vom Benutzer an den Client
-                BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
-
-                // Nachricht vom Server an den Client
-                BufferedReader serverInput = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-                // Nachricht vom Client an den Server
-                DataOutputStream clientOutput = new DataOutputStream(clientSocket.getOutputStream());
-
                 System.out.println("Bitte Eingabe tätigen: ");
-                String eingabe = userInput.readLine()  + '\n';
-
+                String eingabe = userInput.readLine() + '\n';
                 clientOutput.writeUTF(eingabe);
-                //clientOutput.writeBytes(eingabe);
-                if (eingabe.equals("BYE" + '\n')) {
 
+                String serverOut;
+                serverOut = serverInput.readUTF();
+                System.out.println(serverOut);
+                if (serverOut.equals("OK BYE")) {
                     living = false;
                     serverInput.close();
                     userInput.close();

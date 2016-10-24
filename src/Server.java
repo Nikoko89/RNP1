@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Server {
     private final int MAX_CLIENTS = 3;
+    private final String PASSWORD = "abc123";
     private static ServerSocket welcomeSocket = null;
     private static List<ServerHelper> listenerSockets;
 
@@ -22,7 +23,6 @@ public class Server {
             e.printStackTrace();
         }
         boolean serverAlive = true;
-        boolean listenForClients = true;
         while (serverAlive) {
             if (listenerSockets.size() < MAX_CLIENTS) {
                 try {
@@ -47,14 +47,20 @@ public class Server {
     }
 
     public void remove() {
-        System.out.println(listenerSockets.size());
         for (int i = 0; i < listenerSockets.size(); i++) {
             if (listenerSockets.get(i).alive == false) {
                 listenerSockets.remove(i);
-                System.out.println("I removed one client");
+                System.out.println("A client sad BYE and left");
                 System.out.println("Clients left: " + listenerSockets.size());
             }
         }
+    }
+
+    public boolean checkPassword(String pass){
+        if (pass.equals(PASSWORD)){
+            return true;
+        }
+        return false;
     }
 
     public class ServerHelper extends Thread {
@@ -78,9 +84,8 @@ public class Server {
                 DataInputStream clientInput = null;
                 clientInput = new DataInputStream(socketForClient.getInputStream());
                 // Nachricht vom Server an den Client
-                DataOutputStream clientOutput = new DataOutputStream(socketForClient.getOutputStream());
+                DataOutputStream serverOutput = new DataOutputStream(socketForClient.getOutputStream());
                 String inputLine;
-                System.out.println("Client connected to Server");
                 while (alive) {
                     try {
                         inputLine = clientInput.readUTF();
@@ -92,46 +97,46 @@ public class Server {
                         switch (inputArray[0]) {
                             case "LOWERCASE":
                                 if (inputLine.length() > 256) {
-                                    System.out.println("ERROR LOWERCASE commmand detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR LOWERCASE commmand detected, but the given String is too long");
                                 } else if (inputArray.length == 1) {
-                                    System.out.println("ERROR LOWERCASE command detected, but there is a Missing Parameter");
+                                    serverOutput.writeUTF("ERROR LOWERCASE command detected, but there is a Missing Parameter");
                                 } else {
                                     String parameter = inputLine.replaceAll("LOWERCASE ", "");
-                                    System.out.println("OK " + parameter.replaceAll("\\n", "").toLowerCase());
+                                    serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toLowerCase());
                                 }
                                 break;
                             case "UPPERCASE":
                                 if (inputLine.length() > 256) {
-                                    System.out.println("ERROR UPPERCASE command detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR UPPERCASE command detected, but the given String is too long");
                                 } else if (inputArray.length == 1) {
-                                    System.out.println("ERROR UPPERCASE command detected, but there is a Missing Parameter");
+                                    serverOutput.writeUTF("ERROR UPPERCASE command detected, but there is a Missing Parameter");
                                 } else {
                                     String parameter = inputLine.replaceAll("UPPERCASE ", "");
-                                    System.out.println("OK " + parameter.replaceAll("\\n", "").toUpperCase());
+                                    serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toUpperCase());
                                 }
                                 break;
                             case "REVERSE":
                                 if (inputLine.length() > 256) {
-                                    System.out.println("ERROR REVERSE command detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR REVERSE command detected, but the given String is too long");
                                 } else if (inputArray.length == 1) {
-                                    System.out.println("ERROR REVERSE command detected, but there is a Missing Parameter");
+                                    serverOutput.writeUTF("ERROR REVERSE command detected, but there is a Missing Parameter");
                                 } else {
                                     String parameter = inputLine.replaceAll("\\n", "").replaceAll("REVERSE ", "");
                                     String reverse = new StringBuffer(parameter).reverse().toString();
-                                    System.out.println("OK " + reverse);
+                                    serverOutput.writeUTF("OK " + reverse);
                                 }
                                 break;
                             case "BYE":
                                 if (inputLine.length() > 256) {
-                                    System.out.println("ERROR BYE command detected, but the given String is too long");
+                                    serverOutput.writeUTF("ERROR BYE command detected, but the given String is too long");
                                 } else if (inputArray.length > 1) {
-                                    System.out.println("ERROR BYE command detected, but there is a Parameter, which is not necessary for this command");
+                                    serverOutput.writeUTF("ERROR BYE command detected, but there is a Parameter, which is not necessary for this command");
                                 } else {
-                                    System.out.println("OK BYE");
+                                    serverOutput.writeUTF("OK BYE");
                                     socketForClient.setKeepAlive(false);
                                     alive = false;
                                     remove();
-                                    clientOutput.close();
+                                    serverOutput.close();
                                     clientInput.close();
                                     socketForClient.close();
                                 }
@@ -143,7 +148,7 @@ public class Server {
                         socketForClient.setKeepAlive(false);
                         alive = false;
                         remove();
-                        clientOutput.close();
+                        serverOutput.close();
                         clientInput.close();
                         socketForClient.close();
                         break;
