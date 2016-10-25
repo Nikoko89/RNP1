@@ -35,8 +35,6 @@ public class Server {
         while (serverAlive) {
             if (listenerSockets.size() < MAX_CLIENTS) {
                 try {
-                    System.out.println("Waiting for Clients");
-
                     Socket clientS = welcomeSocket.accept();
                     ServerHelper clientListener;
                     clientListener = new ServerHelper(clientS);
@@ -47,9 +45,7 @@ public class Server {
                     System.err.println("Could not create Socket to listen for client");
                 }
             }
-            System.out.println("Size of current Clients: " + listenerSockets.size());
         }
-        System.out.println("Sizecurrent Clients: " + listenerSockets.size());
     }
 
     public static void main(String[] args) {
@@ -59,7 +55,7 @@ public class Server {
         server.start();
     }
 
-    public void remove() {
+    public synchronized void remove() {
         for (int i = 0; i < listenerSockets.size(); i++) {
             if (listenerSockets.get(i).alive == false) {
                 listenerSockets.remove(i);
@@ -79,6 +75,8 @@ public class Server {
     public class ServerHelper extends Thread {
         private Socket socketForClient = null;
         private boolean alive = true;
+        private DataOutputStream serverOutput;
+        private DataInputStream clientInput;
 
         public ServerHelper(Socket socket) {
             super("ServerHelper");
@@ -94,10 +92,9 @@ public class Server {
 
             try {
                 //Nachricht vom Client an den Server
-                DataInputStream clientInput = null;
                 clientInput = new DataInputStream(socketForClient.getInputStream());
                 // Nachricht vom Server an den Client
-                DataOutputStream serverOutput = new DataOutputStream(socketForClient.getOutputStream());
+                serverOutput = new DataOutputStream(socketForClient.getOutputStream());
                 String inputLine;
                 while (alive) {
                     try {
@@ -110,42 +107,42 @@ public class Server {
                         switch (inputArray[0]) {
                             case "LOWERCASE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR <LOWERCASE commmand detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <LOWERCASE commmand detected, but the given String is too long>" + '\n');
                                 } else if (inputArray.length == 1) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <LOWERCASE command detected, but there is a Missing Parameter>");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <LOWERCASE command detected, but there is a Missing Parameter>" + '\n');
                                 } else {
                                     String parameter = inputLine.replaceAll("LOWERCASE ", "");
-                                    serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toLowerCase());
+                                    serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toLowerCase() + '\n');
                                 }
                                 break;
                             case "UPPERCASE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR <UPPERCASE command detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <UPPERCASE command detected, but the given String is too long>" + '\n');
                                 } else if (inputArray.length == 1) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <UPPERCASE command detected, but there is a Missing Parameter>");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <UPPERCASE command detected, but there is a Missing Parameter>" + '\n');
                                 } else {
                                     String parameter = inputLine.replaceAll("UPPERCASE ", "");
-                                    serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toUpperCase());
+                                    serverOutput.writeUTF("OK " + parameter.replaceAll("\\n", "").toUpperCase() + '\n');
                                 }
                                 break;
                             case "REVERSE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR <REVERSE command detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <REVERSE command detected, but the given String is too long>" + '\n');
                                 } else if (inputArray.length == 1) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <REVERSE command detected, but there is a Missing Parameter>");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <REVERSE command detected, but there is a Missing Parameter>" + '\n');
                                 } else {
                                     String parameter = inputLine.replaceAll("\\n", "").replaceAll("REVERSE ", "");
                                     String reverse = new StringBuffer(parameter).reverse().toString();
-                                    serverOutput.writeUTF("OK " + reverse);
+                                    serverOutput.writeUTF("OK " + reverse + '\n');
                                 }
                                 break;
                             case "BYE":
                                 if (inputLine.length() > 256) {
-                                    serverOutput.writeUTF("ERROR <BYE command detected, but the given String is too long>");
+                                    serverOutput.writeUTF("ERROR <BYE command detected, but the given String is too long>" + '\n');
                                 } else if (inputArray.length > 1) {
-                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <BYE command detected, but there is a Parameter, which is not necessary for this command>");
+                                    serverOutput.writeUTF("ERROR SYNTAX ERROR <BYE command detected, but there is a Parameter, which is not necessary for this command>" + '\n');
                                 } else {
-                                    serverOutput.writeUTF("OK BYE");
+                                    serverOutput.writeUTF("OK BYE" + '\n');
                                     socketForClient.setKeepAlive(false);
                                     alive = false;
                                     remove();
@@ -155,18 +152,31 @@ public class Server {
                                 }
                                 break;
                             case "SHUTDOWN":
-                                if (inputArray[1].equals(PASSWORD) && listenerSockets.size() == 0){
-                                    serverOutput.writeUTF("OK SHUTDOWN");
+                                String givenPass = inputArray[1].replaceAll("\\n", "");
+                                if (givenPass.equals(PASSWORD) && listenerSockets.size() == 1){
+                                    serverOutput.writeUTF("OK SHUTDOWN" + '\n');
                                     socketForClient.setKeepAlive(false);
                                     alive = false;
+                                    remove();
                                     serverOutput.close();
                                     clientInput.close();
                                     socketForClient.close();
                                     shutDown();
-                                }else if (inputArray[1].equals(PASSWORD) && listenerSockets.size() > 0){
-                                    //TODO
-                                }else if (!inputArray[1].equals(PASSWORD)){
-                                    serverOutput.writeUTF("ERROR <The password you typed in is not correct>");
+                                }else if (givenPass.equals(PASSWORD) && listenerSockets.size() > 1){
+                                    serverOutput.writeUTF("OK SHUTDOWN" + '\n');
+                                    remove();
+                                    for (ServerHelper sfcl: listenerSockets){
+                                        sfcl.serverOutput.writeUTF("SHUTTINGDOWN" + '\n');
+                                    }
+                                    serverOutput.close();
+                                    clientInput.close();
+                                    socketForClient.close();
+                                    while(listenerSockets.size() > 0){
+
+                                    }
+                                    shutDown();
+                                }else if (!givenPass.equals(PASSWORD)){
+                                    serverOutput.writeUTF("ERROR <The password you typed in is not correct>" + '\n');
                                 }
                                 break;
                             default:
