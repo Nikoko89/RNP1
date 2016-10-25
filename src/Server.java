@@ -12,6 +12,7 @@ public class Server {
     private static ServerSocket welcomeSocket = null;
     private static List<ServerHelper> listenerSockets;
     private static Server server;
+    private boolean serverAlive;
 
     public Server(int port) {
     }
@@ -22,7 +23,7 @@ public class Server {
         } catch (IOException e) {
             System.err.println("Could not close Serversocket");
         }
-        server.shutDown();
+        serverAlive = false;
     }
 
     public void start() {
@@ -31,7 +32,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        boolean serverAlive = true;
+        serverAlive = true;
         while (serverAlive) {
             if (listenerSockets.size() < MAX_CLIENTS) {
                 try {
@@ -44,6 +45,11 @@ public class Server {
                 } catch (IOException e) {
                     System.err.println("Could not create Socket to listen for client");
                 }
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -63,13 +69,6 @@ public class Server {
                 System.out.println("Clients left: " + listenerSockets.size());
             }
         }
-    }
-
-    public boolean checkPassword(String pass){
-        if (pass.equals(PASSWORD)){
-            return true;
-        }
-        return false;
     }
 
     public class ServerHelper extends Thread {
@@ -163,7 +162,10 @@ public class Server {
                                     socketForClient.close();
                                     shutDown();
                                 }else if (givenPass.equals(PASSWORD) && listenerSockets.size() > 1){
+                                    serverAlive = false;
                                     serverOutput.writeUTF("OK SHUTDOWN" + '\n');
+                                    socketForClient.setKeepAlive(false);
+                                    alive = false;
                                     remove();
                                     for (ServerHelper sfcl: listenerSockets){
                                         sfcl.serverOutput.writeUTF("SHUTTINGDOWN" + '\n');
