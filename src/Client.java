@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 
 
 public class Client {
+    private static long lastCommand;
 
     public static void main(String[] args) {
 
@@ -25,7 +26,7 @@ public class Client {
                 System.out.println("Please type in a command: ");
                 String eingabe = userInput.readLine() + '\n';
                 clientOutput.writeUTF(eingabe);
-
+                lastCommand = System.currentTimeMillis();
                 String serverOut;
                 serverOut = serverInput.readUTF();
                 System.out.println(serverOut);
@@ -39,5 +40,9 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void timeIsRunning(){
+
     }
 }

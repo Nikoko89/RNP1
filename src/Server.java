@@ -3,7 +3,6 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,8 +11,18 @@ public class Server {
     private final String PASSWORD = "abc123";
     private static ServerSocket welcomeSocket = null;
     private static List<ServerHelper> listenerSockets;
+    private static Server server;
 
     public Server(int port) {
+    }
+
+    public void shutDown() throws IOException{
+        try {
+            welcomeSocket.close();
+        } catch (IOException e) {
+            System.err.println("Could not close Serversocket");
+        }
+        server.shutDown();
     }
 
     public void start() {
@@ -26,6 +35,8 @@ public class Server {
         while (serverAlive) {
             if (listenerSockets.size() < MAX_CLIENTS) {
                 try {
+                    System.out.println("Waiting for Clients");
+
                     Socket clientS = welcomeSocket.accept();
                     ServerHelper clientListener;
                     clientListener = new ServerHelper(clientS);
@@ -36,13 +47,15 @@ public class Server {
                     System.err.println("Could not create Socket to listen for client");
                 }
             }
+            System.out.println("Size of current Clients: " + listenerSockets.size());
         }
+        System.out.println("Sizecurrent Clients: " + listenerSockets.size());
     }
 
     public static void main(String[] args) {
         int port = 6432;
         listenerSockets = new ArrayList<ServerHelper>();
-        Server server = new Server(port);
+        server = new Server(port);
         server.start();
     }
 
@@ -139,6 +152,21 @@ public class Server {
                                     serverOutput.close();
                                     clientInput.close();
                                     socketForClient.close();
+                                }
+                                break;
+                            case "SHUTDOWN":
+                                if (inputArray[1].equals(PASSWORD) && listenerSockets.size() == 0){
+                                    serverOutput.writeUTF("OK SHUTDOWN");
+                                    socketForClient.setKeepAlive(false);
+                                    alive = false;
+                                    serverOutput.close();
+                                    clientInput.close();
+                                    socketForClient.close();
+                                    shutDown();
+                                }else if (inputArray[1].equals(PASSWORD) && listenerSockets.size() > 0){
+                                    //TODO
+                                }else if (!inputArray[1].equals(PASSWORD)){
+                                    serverOutput.writeUTF("ERROR <The password you typed in is not correct>");
                                 }
                                 break;
                             default:
