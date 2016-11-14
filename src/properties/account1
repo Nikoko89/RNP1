@@ -1,0 +1,4 @@
+username=account1
+password=account1
+serveradress=127.0.0.1
+port=6432
